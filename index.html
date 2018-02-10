@@ -17,6 +17,15 @@
             gl.viewport(0, 0, canvas.width, canvas.height);
         }
 
+        function compileShader(shaderSource, shaderType){
+
+            let shader = gl.createShader(shader);
+            gl.shaderSource(shader, shaderSource);
+            gl.compileShader(shader);
+            return shader;
+            
+        }
+
         function getShader(id){
             let shaderScript = document.getElementById(id);
 

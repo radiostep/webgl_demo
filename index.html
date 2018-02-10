@@ -23,7 +23,7 @@
             gl.shaderSource(shader, shaderSource);
             gl.compileShader(shader);
             return shader;
-            
+
         }
 
         function getShader(id){
@@ -66,6 +66,16 @@
 
             let fragmentShader = getShader("shader-fs");
             let vertexShader = getShader("shader-vs");
+
+            let shaderProgram = gl.createProgram();
+            gl.attachShader(shaderProgram, vertexShader);
+            gl.attachShader(shaderProgram, fragmentShader);
+            gl.linkProgram(shaderProgram);
+
+            gl.useProgram(shaderProgram);
+
+            gl.deleteShader(fragmentShader);
+            gl.deleteShader(vertexShader);
 
         }
 

@@ -80,19 +80,36 @@
             return abs(mod(4.*r, PI*2.)-PI);
         }
 
+
+
+        float fbm(in vec2 p) {
+            float z = 2.;
+            float rz = 0.;
+            vec2 bp = p;
+            for (float i = 1.; i < 6.; i++)
+            {
+                rz += abs((smoothNoise(p) - 0.5)*2.) / z;
+                z = z * 2.;
+                p = p * 2.;
+            }
+            return rz;
+        }
+
         void main() {
 
             vec2 p = gl_FragCoord.xy / uResolution.xy -.5;
 
             p.x *= uResolution.x / uResolution.y;
 
-            float rz = 1.;
+            p *= 40.;
 
-            p /= exp(mod(uTime * .15, PI));
+            float rz = fbm(p);
 
-            rz *= abs(circ(p));
+            p /= exp(mod(uTime * 1.5, PI));
 
-            vec3 col = vec3(0.2, 0.1, 0.6) / rz;
+            rz *= pow(abs(0.1 - circ(p)), .9);
+
+            vec3 col = vec3(0.05, 0.2, 0.1) / rz;
 
             gl_FragColor = vec4(col, 1.0);
 
@@ -143,11 +160,11 @@
             gl.shaderSource(shader, shaderSource);
             gl.compileShader(shader);
 
-            //     // Check for any compilation error
-            // if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-            //     alert(gl.getShaderInfoLog(shader));
-            //     return null;
-            // };
+                // Check for any compilation error
+            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                alert(gl.getShaderInfoLog(shader));
+                return null;
+            };
 
             return shader;
 
@@ -223,8 +240,8 @@
 
             resolutionLocation = gl.getUniformLocation(shaderProgram, "uResolution");
             timeLocation = gl.getUniformLocation(shaderProgram, "uTime");
-            console.log(timeLocation);
-            console.log(resolutionLocation);
+            // console.log(timeLocation);
+            // console.log(resolutionLocation);
 
             vertexPositionLocation = gl.getAttribLocation(shaderProgram, "aVertexPosition");
 

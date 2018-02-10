@@ -22,6 +22,15 @@
 
         let canvas, gl;
         let vertexPositionLocation;
+        let vertices = [
+            -1.0, -1.0,
+             1.0, -1.0,
+            -1.0,  1.0,
+
+            -1.0,  1.0,
+             1.0, -1.0,
+             1.0,  1.0
+        ];
 
         function resize(){
             canvas.width = canvas.offsetWidth;
@@ -66,6 +75,15 @@
 
         }
 
+        function drawScene(){
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+        }
+
+        function render(){
+            requestAnimationFrame(render);
+            drawScene();
+        }
+
         function bootstrap(){
 
             canvas = document.getElementById("holder");
@@ -97,6 +115,7 @@
             gl.enableVertexAttribArray(vertexPositionLocation);
             gl.vertexAttribPointer(vertexPositionLocation, 2, gl.FLOAT, 0, 0);
 
+            render();
 
         }
 

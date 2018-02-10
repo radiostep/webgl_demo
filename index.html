@@ -109,7 +109,7 @@
 
             rz *= pow(abs(0.1 - circ(p)), .9);
 
-            vec3 col = vec3(0.05, 0.2, 0.1) / rz;
+            vec3 col = vec3(0.05*sin(uTime), 0.2*sin(uTime*.05), 0.1*sin(uTime*2.)) / rz;
 
             gl_FragColor = vec4(col, 1.0);
 

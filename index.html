@@ -11,9 +11,20 @@
 
         const float PI = 3.14159265359;
 
+        uniform float uTime;
+        uniform vec2 uResolution;
+
         void main() {
 
-            gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+            vec2 position = gl_FragCoord.xy / uResolution.xy;
+
+            float wave = sin(2. * PI * position.x);
+
+            wave = wave + 1.;
+
+            wave = wave / 2.;
+
+            gl_FragColor = vec4(vec3(wave), 1.0);
 
         }
 
@@ -34,6 +45,9 @@
 
         let canvas, gl;
         let vertexPositionLocation;
+        let resolutionLocation, resolution;
+        let startTime;
+        let timeLocation, time;
         let vertices = [
             -1.0, -1.0,
              1.0, -1.0,
@@ -95,11 +109,19 @@
         }
 
         function drawScene(){
+
+            gl.uniform1f(timeLocation, time);
+            gl.uniform2fv(resolutionLocation, resolution);
             gl.drawArrays(gl.TRIANGLES, 0, 6);
         }
 
         function render(){
             requestAnimationFrame(render);
+            resolution = [
+                canvas.width,
+                canvas.height
+            ];
+            time = (Date.now() - startTime) / 1000;
             drawScene();
         }
 
@@ -126,6 +148,9 @@
             gl.deleteShader(fragmentShader);
             gl.deleteShader(vertexShader);
 
+            resolutionLocation = gl.getUniformLocation(shaderProgram, "uResolution");
+            timeLocation = gl.getUniformLocation(shaderProgram, "uTime");
+
             vertexPositionLocation = gl.getAttribLocation(shaderProgram, "aVertexPosition");
 
             let buffer = gl.createBuffer();
@@ -133,6 +158,8 @@
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
             gl.enableVertexAttribArray(vertexPositionLocation);
             gl.vertexAttribPointer(vertexPositionLocation, 2, gl.FLOAT, false, 0, 0);
+
+            startTime = Date.now
 
             render();
 

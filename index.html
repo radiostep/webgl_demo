@@ -7,6 +7,60 @@
     <link rel="stylesheet" href="style.css">
     <script id="shader-fs" type="x-shader/x-fragment"></script>
     <script id="shader-vs" type="x-shader/x-vertex"></script>
+    <script>
+
+        let canvas, gl;
+
+        function resize(){
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            gl.viewport(0, 0, canvas.width, canvas.height);
+        }
+
+        function getShader(id){
+            let shaderScript = document.getElementById(id);
+
+            let shaderSource = "";
+            let textLine = shaderScript.firstChild;
+            while (textLine) {
+                // 3 - TEXT NODE
+                if (textLine.nodeType == 3){
+                    shaderSource += textLine.textContent;
+                }
+
+                textLine = textLine.nextSibling;
+            }
+
+            let shader;
+            if (shaderScript.type == "x-shader/x-fragment"){
+                shader = compileShader(shaderScript, gl.FRAGMENT_SHADER);
+            }
+            else if (shaderScript.type == "x-shader/x-vertex"){
+                shader = compileShader(shaderScript, gl.VERTEX_SHADER);
+            }
+            else {
+                return null;
+            }
+            return shader;
+
+        }
+
+        function bootstrap(){
+
+            canvas = document.getElementById("holder");
+
+            gl = canvas.getContext("experimental-webgl");
+
+            resize();
+
+            window.addEventListener("resize", resize);
+
+            let fragmentShader = getShader("shader-fs");
+            let vertexShader = getShader("shader-vs");
+
+        }
+
+    </script>
     <title>Document</title>
 </head>
 <body onload="bootstrap();">

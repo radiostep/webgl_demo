@@ -4,7 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" href="style.css">
+    <style>
+    
+    body{
+        position: absolute;
+        left: 0;
+        top: 0;
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    canvas{
+        position: relative;
+        border: none;
+        width: 100%;
+        height: 100%;
+    }
+
+    </style>
     <script id="shader-fs" type="x-shader/x-fragment">
     
         precision highp float;
@@ -14,17 +33,68 @@
         uniform float uTime;
         uniform vec2 uResolution;
 
+        float random(float p) {
+            return fract(sin(p) * 10000.);
+        }
+
+        float noise(vec2 p) {
+
+            float t = uTime / 2000.;
+
+            if (t > 1.)
+                t -= floor(t);
+
+            return random(p.x * 14. + p.y * sin(t) * .05);
+
+        }
+
+        vec2 sw(vec2 p) {
+            return vec2(floor(p.x), floor(p.y));
+        }
+        vec2 se(vec2 p) {
+            return vec2(ceil(p.x), floor(p.y));
+        }
+        vec2 nw(vec2 p) {
+            return vec2(floor(p.x), ceil(p.y));
+        }
+        vec2 ne(vec2 p) {
+            return vec2(ceil(p.x), ceil(p.y));
+        }
+
+        float smoothNoise(vec2 p) {
+            vec2 inter = smoothstep(0., 1., fract(p));
+            float s = mix(noise(sw(p)), noise(se(p)), inter.x);
+            float n = mix(noise(nw(p)), noise(ne(p)), inter.x);
+            return mix(s, n, inter.y);
+        }
+
+        mat2 rotate(in float theta) {
+            float c = cos(theta);
+            float s = sin(theta);
+            return mat2(c, -s, s, c);
+        }
+
+        float circ(vec2 p) {
+            float r = length(p);
+            r = log(sqrt(r));
+            return abs(mod(4.*r, PI*2.)-PI);
+        }
+
         void main() {
 
-            vec2 position = gl_FragCoord.xy / uResolution.xy;
+            vec2 p = gl_FragCoord.xy / uResolution.xy -.5;
 
-            float wave = sin(2. * PI * position.x);
+            p.x *= uResolution.x / uResolution.y;
 
-            wave = wave + 1.;
+            float rz = 1.;
 
-            wave = wave / 2.;
+            p /= exp(mod(uTime * .15, PI));
 
-            gl_FragColor = vec4(vec3(wave), 1.0);
+            rz *= abs(circ(p));
+
+            vec3 col = vec3(0.2, 0.1, 0.6) / rz;
+
+            gl_FragColor = vec4(col, 1.0);
 
         }
 
@@ -45,9 +115,9 @@
 
         let canvas, gl;
         let vertexPositionLocation;
+        let timeLocation, time;
         let resolutionLocation, resolution;
         let startTime;
-        let timeLocation, time;
         let vertices = [
             -1.0, -1.0,
              1.0, -1.0,
@@ -59,8 +129,11 @@
         ];
 
         function resize(){
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
+            // canvas.width = canvas.offsetWidth;
+            // canvas.height = canvas.offsetHeight;
+            let positioninfo = canvas.getBoundingClientRect();
+            canvas.width = positioninfo.width;
+            canvas.height = positioninfo.height;
             gl.viewport(0, 0, canvas.width, canvas.height);
         }
 
@@ -70,11 +143,11 @@
             gl.shaderSource(shader, shaderSource);
             gl.compileShader(shader);
 
-                // Check for any compilation error
-            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-                alert(gl.getShaderInfoLog(shader));
-                return null;
-            };
+            //     // Check for any compilation error
+            // if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+            //     alert(gl.getShaderInfoLog(shader));
+            //     return null;
+            // };
 
             return shader;
 
@@ -150,6 +223,8 @@
 
             resolutionLocation = gl.getUniformLocation(shaderProgram, "uResolution");
             timeLocation = gl.getUniformLocation(shaderProgram, "uTime");
+            console.log(timeLocation);
+            console.log(resolutionLocation);
 
             vertexPositionLocation = gl.getAttribLocation(shaderProgram, "aVertexPosition");
 
@@ -159,13 +234,15 @@
             gl.enableVertexAttribArray(vertexPositionLocation);
             gl.vertexAttribPointer(vertexPositionLocation, 2, gl.FLOAT, false, 0, 0);
 
-            startTime = Date.now
+            startTime = Date.now();
 
             render();
 
         }
 
     </script>
+    
+    <link rel="stylesheet" href="style.css">
     <title>Document</title>
 </head>
 <body onload="bootstrap();">
